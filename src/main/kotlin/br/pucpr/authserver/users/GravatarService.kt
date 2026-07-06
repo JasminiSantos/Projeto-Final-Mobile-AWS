@@ -11,13 +11,6 @@ import java.security.MessageDigest
 @Service
 class GravatarService(val avatarService: AvatarService) {
 
-    /**
-     * Tries to find an avatar on Gravatar. If the user has no Gravatar profile,
-     * generates one via ui-avatars.com based on their name.
-     * The image is downloaded and uploaded to the configured storage (S3/filesystem).
-     *
-     * @return the stored path (without ROOT prefix), e.g. "1/a_1.png"
-     */
     fun fetchAndSave(user: User): String {
         val (bytes, contentType) = tryGravatar(user.email) ?: fetchUiAvatar(user.name)
         val cleanContentType = contentType.split(";").first().trim()
