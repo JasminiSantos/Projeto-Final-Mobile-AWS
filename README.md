@@ -25,26 +25,6 @@ O avatar encontrado é **baixado** (bytes em memória) e enviado ao armazenament
 
 A atribuição do avatar acontece em `UserService.insert`, logo após a criação do usuário. Falhas na busca do avatar são logadas, mas não impedem o cadastro.
 
-### Fluxo
-
-Criar usuário
-    │
-    ▼
-Gravatar (hash MD5 do e-mail, parâmetro d=404)
-    │
-    ├─ HTTP 200 → baixa a imagem
-    │
-    └─ HTTP 404 → ui-avatars.com (PNG, nome do usuário)
-            │
-            ▼
-    DownloadedMultipartFile (bytes → MultipartFile)
-            │
-            ▼
-    AvatarService → S3Storage → bucket S3
-            │
-            ▼
-    Banco guarda path (ex.: 2/a_2.png)
-    API retorna URL do S3 (não link do Gravatar/ui-avatars)
 
 #### 4. Endpoint DELETE `/users/{id}/avatar` (opcional)
 
@@ -72,3 +52,35 @@ Implementado em `UserController.resetAvatar`. Refaz todo o processo (Gravatar �
 |---|---|---|
 | `PUT` | `/users/{id}/avatar` | Upload manual de avatar (multipart) |
 | `DELETE` | `/users/{id}/avatar` | Refaz busca Gravatar/ui-avatars e reenvia ao S3 |
+
+### Fluxo
+
+Criar usuário
+    │
+    ▼
+Gravatar (hash MD5 do e-mail, parâmetro d=404)
+    │
+    ├─ HTTP 200 → baixa a imagem
+    │
+    └─ HTTP 404 → ui-avatars.com (PNG, nome do usuário)
+            │
+            ▼
+    DownloadedMultipartFile (bytes → MultipartFile)
+            │
+            ▼
+    AvatarService → S3Storage → bucket S3
+            │
+            ▼
+    Banco guarda path (ex.: 2/a_2.png)
+    API retorna URL do S3 (não link do Gravatar/ui-avatars)
+
+### Configuração na AWS
+
+| Item | Detalhe |
+|---|---|
+| S3 Bucket | `jasmini-authserver-avatars` |
+| Região | `us-east-2` (Ohio) |
+| IAM User | usuário dedicado com access key |
+| Policy IAM | `PutObject`, `GetObject`, `DeleteObject`, `ListBucket` no bucket |
+| Credenciais | `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_REGION` via `.env` |
+| Path no S3 | `avatars/{userId}/a_{userId}.png` |

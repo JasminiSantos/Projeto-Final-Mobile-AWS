@@ -14,8 +14,11 @@ import org.springframework.web.multipart.MultipartFile
 
 @Component
 class S3Storage : FileStorage {
+    private val region = System.getenv("AWS_REGION") ?: "us-east-2"
+    private val prefix = "https://$BUCKET.s3.$region.amazonaws.com"
+
     private val s3: AmazonS3 = AmazonS3ClientBuilder.standard()
-        .withRegion(Regions.US_EAST_1)
+        .withRegion(Regions.fromName(region))
         .withCredentials(EnvironmentVariableCredentialsProvider())
         .build()
 
@@ -32,18 +35,17 @@ class S3Storage : FileStorage {
             .withS3Client(s3)
             .build()
         transferManager
-            .upload(PUBLIC, path, file.inputStream, meta)
+            .upload(BUCKET, path, file.inputStream, meta)
             .waitForUploadResult()
     }
 
     override fun load(path: String): Resource? = InputStreamResource(
-        s3.getObject(PUBLIC, path.replace("--", "/")).objectContent
+        s3.getObject(BUCKET, path.replace("--", "/")).objectContent
     )
 
-    override fun urlFor(name: String) = "$PREFIX/$name"
+    override fun urlFor(name: String) = "$prefix/$name"
 
     companion object {
-        private const val PUBLIC = "jasmini-authserver-avatars "
-        private const val PREFIX = ""
+        private const val BUCKET = "jasmini-authserver-avatars"
     }
 }
