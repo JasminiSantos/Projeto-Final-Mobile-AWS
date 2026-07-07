@@ -25,6 +25,27 @@ O avatar encontrado é **baixado** (bytes em memória) e enviado ao armazenament
 
 A atribuição do avatar acontece em `UserService.insert`, logo após a criação do usuário. Falhas na busca do avatar são logadas, mas não impedem o cadastro.
 
+### Fluxo
+
+Criar usuário
+    │
+    ▼
+Gravatar (hash MD5 do e-mail, parâmetro d=404)
+    │
+    ├─ HTTP 200 → baixa a imagem
+    │
+    └─ HTTP 404 → ui-avatars.com (PNG, nome do usuário)
+            │
+            ▼
+    DownloadedMultipartFile (bytes → MultipartFile)
+            │
+            ▼
+    AvatarService → S3Storage → bucket S3
+            │
+            ▼
+    Banco guarda path (ex.: 2/a_2.png)
+    API retorna URL do S3 (não link do Gravatar/ui-avatars)
+
 #### 4. Endpoint DELETE `/users/{id}/avatar` (opcional)
 
 Implementado em `UserController.resetAvatar`. Refaz todo o processo (Gravatar → ui-avatars → S3) e atualiza o campo `avatar` do usuário.
