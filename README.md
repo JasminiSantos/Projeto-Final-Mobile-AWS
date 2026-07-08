@@ -1,5 +1,7 @@
 # Serviços Mobile em Cloud AWS
 
+### Aluna: Jasmini Rebecca Gomes dos Santos
+
 ## Tema 2: Avatares Avançados
 
 Nenhum usuário merece ficar sem avatar. O servidor tenta definir um automaticamente ao criar o usuário e também permite refazer esse processo manualmente.
@@ -8,7 +10,7 @@ Nenhum usuário merece ficar sem avatar. O servidor tenta definir um automaticam
 
 #### 1. Busca no Gravatar
 
-Ao criar um usuário, o `GravatarService` calcula o hash MD5 do e-mail e consulta o [Gravatar](https://docs.gravatar.com/general/images/). A requisição usa `d=404` para distinguir quem tem avatar cadastrado de quem não tem — se a resposta for HTTP 404, o fluxo segue para o fallback.
+Ao criar um usuário, o `GravatarService` calcula o hash MD5 do e-mail e consulta o [Gravatar](https://docs.gravatar.com/general/images/). A requisição usa `d=404` para distinguir quem tem avatar cadastrado de quem não tem. Se a resposta for HTTP 404, o fluxo segue para o fallback.
 
 #### 2. Fallback com ui-avatars.com
 
@@ -55,24 +57,36 @@ Implementado em `UserController.resetAvatar`. Refaz todo o processo (Gravatar �
 
 ### Fluxo
 
+```text
 Criar usuário
-    │
-    ▼
-Gravatar (hash MD5 do e-mail, parâmetro d=404)
-    │
-    ├─ HTTP 200 → baixa a imagem
-    │
-    └─ HTTP 404 → ui-avatars.com (PNG, nome do usuário)
+│
+└── Buscar avatar no Gravatar (MD5 do e-mail, d=404)
+    ├── HTTP 200
+    │   └── Download da imagem
+    └── HTTP 404
+        └── Gerar avatar em ui-avatars.com (PNG)
             │
             ▼
-    DownloadedMultipartFile (bytes → MultipartFile)
+DownloadedMultipartFile
+(bytes → MultipartFile)
             │
             ▼
-    AvatarService → S3Storage → bucket S3
+AvatarService
             │
             ▼
-    Banco guarda path (ex.: 2/a_2.png)
-    API retorna URL do S3 (não link do Gravatar/ui-avatars)
+S3Storage
+            │
+            ▼
+Bucket S3
+            │
+            ▼
+Banco salva apenas o path
+(ex.: 2/a_2.png)
+            │
+            ▼
+API retorna a URL do arquivo armazenado no S3
+(nunca a URL do Gravatar ou ui-avatars)
+```
 
 ### Configuração na AWS
 
