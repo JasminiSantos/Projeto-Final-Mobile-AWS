@@ -98,3 +98,7 @@ API retorna a URL do arquivo armazenado no S3
 | Policy IAM | `PutObject`, `GetObject`, `DeleteObject`, `ListBucket` no bucket |
 | Credenciais | `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_REGION` via `.env` |
 | Path no S3 | `avatars/{userId}/a_{userId}.png` |
+
+### Vídeo
+
+https://github.com/user-attachments/assets/50862393-9d5b-4013-8044-770e30920650
